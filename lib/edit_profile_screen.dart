@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:apexify_tech_profile_manager/profile_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -26,7 +28,48 @@ class EditProfileScreen extends StatelessWidget {
             key: _formKey,
             child: ListView(
               children: [
-                CircleAvatar(),
+                GestureDetector(
+                  child: CircleAvatar(
+                    radius: 60,
+                    backgroundImage: profile.getImageBase64() == null
+                        ? null
+                        : MemoryImage(base64Decode(profile.getImageBase64()!)),
+                    child: profile.getImageBase64() == null
+                        ? Icon(Icons.person, size: 40, color: Colors.black45)
+                        : null,
+                  ),
+
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: Text('Pick Image'),
+                          content: Column(
+                            mainAxisSize: .min,
+                            crossAxisAlignment: .start,
+                            children: [
+                              TextButton(
+                                onPressed: () {
+                                  profile.pickCameraImage();
+                                  Navigator.pop(context);
+                                },
+                                child: Text("Camera"),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  profile.pickGalleryImage();
+                                  Navigator.pop(context);
+                                },
+                                child: Text('Gallery'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
                 SizedBox(height: 10),
                 _buildTextFormField(profile.getNameController(), 'Name', 1, (
                   value,
@@ -61,20 +104,20 @@ class EditProfileScreen extends StatelessWidget {
                 }),
                 SizedBox(height: 10),
                 ElevatedButton(
-                  
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
                       await profile.saveProfile();
-                                    Navigator.pop(context);
+                      Navigator.pop(context);
                     }
-      
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.lightBlue,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5))
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
                   ),
-                
+
                   child: Text('Save'),
                 ),
               ],
@@ -95,6 +138,7 @@ Widget _buildTextFormField(
   return TextFormField(
     controller: controller,
     validator: validator,
+    maxLines: maxlines,
     decoration: InputDecoration(
       label: Text(label),
       labelStyle: TextStyle(color: Colors.blueGrey),
